@@ -1,10 +1,17 @@
 import socket
+import time
 
-# { domain_name: (ip, ttl) }
+# { domain_name: (ip, ttl, timestamp) }
 dns_records = {}
 error_response = "Invalid request"
 not_found_response = "Not found"
 success_response = "Success"
+
+def dump_old_records():
+    for name, record in dns_records.items():
+        ip, ttl, timestamp = record
+        if time.time() - timestamp > ttl:
+            del dns_records[name]
 
 # Returns: response as string
 def generate_response(dnsrequest):
@@ -17,14 +24,14 @@ def generate_response(dnsrequest):
     if "VALUE" in dnsrequest:
         if "TTL" not in dnsrequest:
             return error_response
-        record = (dnsrequest["VALUE"], dnsrequest["TTL"])
+        record = (dnsrequest["VALUE"], dnsrequest["TTL"], time.time())
         # write the record, possibly overwriting
         dns_records[dnsrequest["NAME"]] = record
         return success_response
     else:
         if dnsrequest["NAME"] in dns_records:
             name = dnsrequest["NAME"]
-            ip, ttl = dns_records[name]
+            ip, ttl, timestamp = dns_records[name]
             return "TYPE=A\nNAME={}\nVALUE={}\nTTL={}".format(name, ip, ttl)
         else:
             return not_found_response

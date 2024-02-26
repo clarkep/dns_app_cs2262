@@ -4,8 +4,8 @@ url = 'http://localhost:9090/register'
 
 data =  {
     "hostname": "fibonacci.com",
-    "ip": "172.18.0.2",
-    "as_ip": "172.18.0.3",
+    "ip": "172.18.0.3",
+    "as_ip": "172.18.0.4",
     "as_port": "53533",
 }
 
