@@ -4,16 +4,16 @@ import socket
 app = Flask(__name__)
 
 default_ttl = 10000
-as_success_response = "Success"
+as_success_response = 'Success'
 
 # Received a register PUT, so contact the AS over UDP to register our domain
 # Returns: the AS's response as a string
 def handle_register_request(data):
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) 
-    message = "TYPE=A\nNAME={}\nVALUE={}\nTTL={}".format(
+    message = 'TYPE=A\nNAME={}\nVALUE={}\nTTL={}'.format(
             data["hostname"], data["ip"], default_ttl)
     client_socket.sendto(message.encode(), 
-            (data["as_ip"], int(data["as_port"])))
+            (data['as_ip'], int(data['as_port'])))
     
     response, server_address = client_socket.recvfrom(2048)
     client_socket.close()
@@ -28,13 +28,31 @@ def hello_world():
 def register():
     # Get the data from the request
     data = request.get_json()
-    print("FS: got register request")
+    print('FS: got register request')
     as_response = handle_register_request(data)
 
     if as_response==as_success_response:
         return as_response, 201
     else:
         return as_response, 400
+
+@app.route('/fibonacci')
+def fibonacci():
+    numarg = request.args.get('number')
+    if not numarg.isdigit():
+        return "Invalid", 400
+    
+    n = int(numarg)
+    if n <= 0:
+        return "Invalid", 400
+    # TODO: super fast fibonacci algorthm in C
+    a = 0
+    b = 1
+    for i in range(n-1):
+        tmp = b
+        b = a + b
+        a = tmp
+    return str(b) 
     
 if __name__ == '__main__':
     app.run(host='0.0.0.0',
